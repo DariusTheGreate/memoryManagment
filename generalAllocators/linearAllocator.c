@@ -4,7 +4,7 @@
 #include "stdlib.h"
 #include "string.h"
 
-linear_allocator* create_linear_allocator(const uint32_t buffer_init_size){
+linear_allocator* create_linear_allocator(uint32_t buffer_init_size){
 	void* handle = calloc(ALIGN(buffer_init_size), 1);
 	if(handle == NULL){
 		printf("linear allocator memory allocation returns NULL\n");

@@ -1,3 +1,6 @@
+#ifndef _STACK_ALLACATOR_
+#define _STACK_ALLACATOR_
+
 #include "stdint.h"
 
 #ifndef _ALIGMENT
@@ -15,10 +18,12 @@ typedef struct stack_allocator_type {
 
 } stack_allocator;
 
-stack_allocator* create_stack_allocator(const uint32_t buffer_init_size);
+stack_allocator* create_stack_allocator(uint32_t buffer_init_size);
 
-void* s_alloc(stack_allocator* sa, const uint32_t size);
+void* s_alloc(stack_allocator* sa, uint32_t size);
 
 void s_free(stack_allocator* sa);
 
 void destroy_stack_allocator(stack_allocator* sa);
+
+#endif

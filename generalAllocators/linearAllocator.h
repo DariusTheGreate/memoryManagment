@@ -1,3 +1,6 @@
+#ifndef _LINEAR_ALLOCATOR_
+#define _LINEAR_ALLOCATOR_
+
 #include "stdint.h"
 
 #ifndef _ALIGMENT
@@ -14,10 +17,12 @@ typedef struct linear_allocator_type {
 	uint32_t buffer_offset;
 } linear_allocator;
 
-linear_allocator* create_linear_allocator(const uint32_t buffer_init_size);
+linear_allocator* create_linear_allocator(uint32_t buffer_init_size);
 
 void* l_alloc(linear_allocator* la, uint32_t size);
 
 void l_free(linear_allocator* la);
 
 void destroy_linear_allocator(linear_allocator* la);
+
+#endif
