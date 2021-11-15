@@ -26,7 +26,7 @@ stack_allocator* create_stack_allocator(uint32_t buffer_init_size){
 
 void* s_alloc(stack_allocator* sa, uint32_t size){
 	void* handle = ((sa -> buffer_start) + (sa -> buffer_offset));
-	printf("%d, %d => ", (sa -> buffer_offset), (sa -> buffer_size));
+	//printf("%d, %d => ", (sa -> buffer_offset), (sa -> buffer_size));
 	if(!((sa -> buffer_size) - ALIGN(size))){
 		printf("stack allocator buffer size to small");
 		exit(EXIT_FAILURE);

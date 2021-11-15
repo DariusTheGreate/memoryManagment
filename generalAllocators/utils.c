@@ -1,88 +1,143 @@
 #include "utils.h"
 
 #include "stdio.h"
-#include "stdlib.h"
 #include "pthread.h"
+#include <string.h>
+#include "unistd.h"
 
-typedef char ALIGN[16];
+typedef char ALIGN[32];
 
-union header {
-	struct {
+typedef union block block_t;
+
+union block{
+	struct{
 		size_t size;
 		unsigned is_free;
-		union header *next;
-	} s;
+		block_t* next;
+	} info;
 	ALIGN stub;
 };
-typedef union header header_t;
 
-header_t *head, *tail;
-pthread_mutex_t global_malloc_lock;
+block_t *head = NULL;
 
+block_t *tail = NULL;
 
-header_t *get_free_block(size_t size)
-{
-	header_t *curr = head;
-	while(curr) {
-		if (curr->s.is_free && curr->s.size >= size)
+pthread_mutex_t global_mutex;
+
+block_t* get_free_block(size_t size_in){
+	block_t* curr = head;
+	while(curr){
+		if(curr -> info.is_free && curr -> info.size >= size_in)
 			return curr;
-		curr = curr->s.next;
+		curr = curr -> info.next;
 	}
 	return NULL;
 }
 
+void* my_malloc(size_t size_in){
+	if(!size_in)
+		return NULL;
+	void* res;
+	pthread_mutex_lock(&global_mutex);
+	block_t* block = get_free_block(size_in);
+	
+	if(block){
+		block -> info.is_free = 0;
+		pthread_mutex_unlock(&global_mutex);
+		return (void*)(block + 1);
+	}
 
-void *malloc(size_t size)
+	size_t total_size = sizeof(block_t) + size_in;
+
+	res = sbrk(total_size);
+
+	if(res == (void*)(-1)){
+		pthread_mutex_unlock(&global_mutex);
+		return NULL;
+	}
+
+	block = res;
+	block -> info.is_free = 1;
+	block -> info.next = NULL;
+	block -> info.size = size_in;
+
+	if(!head)
+		head = block;
+	if(tail)
+		tail -> info.next = block;
+	tail = block;
+	
+	pthread_mutex_unlock(&global_mutex);
+	printf("\nin malloc -> %ld\n",(long int)((void*)(block + 1)));
+	return (void*)(block + 1);
+}
+
+void my_free(void* ptr){
+	printf("\nin free -> %ld\n",(long int)ptr);
+	if(!ptr)
+		return;
+	block_t* ptr_block = (block_t*)ptr - 1;
+	void* programbreak = sbrk(0);
+	if((char*)ptr + (ptr_block -> info.size) == programbreak){
+		if(head == tail)
+			head = tail = NULL;
+		else{
+			block_t* tmp = head;
+			while(tmp){
+				if(tmp -> info.next == tail){
+					tmp -> info.next = NULL;
+					tail = tmp;
+				}
+				tmp = tmp -> info.next;
+			}
+		}
+		sbrk(0 - sizeof(block_t) - (ptr_block -> info.size));
+		return;
+	}
+
+	ptr_block -> info.is_free = 1;
+}
+
+void *my_calloc(size_t num, size_t nsize)
 {
-	size_t total_size;
+	size_t size;
 	void *block;
-	header_t *header;
-	if (!size)
+	if (!num || !nsize)
 		return NULL;
-	pthread_mutex_lock(&global_malloc_lock);
-	header = get_free_block(size);
-	if (header) {
-		header->s.is_free = 0;
-		pthread_mutex_unlock(&global_malloc_lock);
-		return (void*)(header + 1);
-	}
-	total_size = sizeof(header_t) + size;
-	block = sbrk(total_size);
-	if (block == (void*) -1) {
-		pthread_mutex_unlock(&global_malloc_lock);
+	size = num * nsize;
+	
+	if (nsize != size / num)
 		return NULL;
-	}
-	header = block;
-	header->s.size = size;
-	header->s.is_free = 0;
-	header->s.next = NULL;
-	if (!head)
-		head = header;
-	if (tail)
-		tail->s.next = header;
-	tail = header;
-	pthread_mutex_unlock(&global_malloc_lock);
-	return (void*)(header + 1);
+	
+	block = my_malloc(size);
+	
+	if (!block)
+		return NULL;
+	
+	memset(block, 0, size);
+	
+	return block;
 }
 
 void* safe_malloc(uint32_t size){
 	void* handle = my_malloc(size);
 	if(handle == NULL){
 		printf("allocation terminated\n");
-		exit(EXIT_FAILURE);
+		//exit(EXIT_FAILURE);
 	}
 	return handle;
 }
 
 void* safe_calloc(uint32_t size){
-	void* handle = calloc(size, 1);
+	void* handle = my_calloc(size, 1);
 	if(handle == NULL){
 		printf("allocation terminated\n");
-		exit(EXIT_FAILURE);
+		//exit(EXIT_FAILURE);
 	}
 	return handle;
 }
 
 void safe_free(void* ptr){
-	free(ptr);
+	my_free(ptr);
+	//printf("free ends");
 }
