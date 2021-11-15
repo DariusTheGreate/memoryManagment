@@ -1,7 +1,7 @@
 #ifndef _STACK_ALLACATOR_
 #define _STACK_ALLACATOR_
 
-#include "stdint.h"
+#include "utils.h"
 
 #ifndef _ALIGMENT
 

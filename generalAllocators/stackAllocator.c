@@ -5,15 +5,15 @@
 #include "string.h"
 
 stack_allocator* create_stack_allocator(uint32_t buffer_init_size){
-	void* handle = calloc(ALIGN(buffer_init_size), 1);
+	void* handle = safe_calloc(ALIGN(buffer_init_size));
 	if(handle == NULL){
-		printf("linear allocator memory allocation returns NULL\n");
+		printf("stack allocator memory allocation returns NULL\n");
 		exit(EXIT_FAILURE);
 	}
 
-	stack_allocator* sa = calloc(sizeof(stack_allocator), 1);
+	stack_allocator* sa = (stack_allocator*)safe_calloc(sizeof(stack_allocator));
 	if(sa == NULL){
-		printf("allocation of linear_allocator return NULL\n");
+		printf("allocation of stack_allocator return NULL\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -25,10 +25,10 @@ stack_allocator* create_stack_allocator(uint32_t buffer_init_size){
 }
 
 void* s_alloc(stack_allocator* sa, uint32_t size){
-	void* handle = (sa -> buffer_start + sa -> buffer_offset);
-	printf("%d, %d => ", handle, sa -> buffer_size);
-	if(ALIGN(size) > sa -> buffer_size){
-		printf("linear allocator buffer size to small");
+	void* handle = ((sa -> buffer_start) + (sa -> buffer_offset));
+	printf("%d, %d => ", (sa -> buffer_offset), (sa -> buffer_size));
+	if(!((sa -> buffer_size) - ALIGN(size))){
+		printf("stack allocator buffer size to small");
 		exit(EXIT_FAILURE);
 	}
 	sa -> buffer_size -= ALIGN(size);
@@ -51,6 +51,6 @@ void s_free_chunk(stack_allocator* sa, uint32_t size){
 
 void destroy_stack_allocator(stack_allocator* sa){
 	s_free(sa);
-	free(sa -> buffer_start);
-	free(sa);	
+	safe_free(sa -> buffer_start);
+	safe_free(sa);	
 }

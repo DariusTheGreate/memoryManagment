@@ -1,7 +1,7 @@
 #ifndef _LINEAR_ALLOCATOR_
 #define _LINEAR_ALLOCATOR_
 
-#include "stdint.h"
+#include "utils.h"
 
 #ifndef _ALIGMENT
 
