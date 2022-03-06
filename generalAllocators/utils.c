@@ -1,5 +1,5 @@
 #include "utils.h"
-
+#include <cstdlib>
 #include "stdio.h"
 #include "pthread.h"
 #include <string.h>
@@ -56,7 +56,7 @@ void* my_malloc(size_t size_in){
 		return NULL;
 	}
 
-	block = res;
+	block = (block_t*)res;
 	block -> info.is_free = 1;
 	block -> info.next = NULL;
 	block -> info.size = size_in;
@@ -68,12 +68,12 @@ void* my_malloc(size_t size_in){
 	tail = block;
 	
 	pthread_mutex_unlock(&global_mutex);
-	printf("\nin malloc -> %ld\n",(long int)((void*)(block + 1)));
+	//printf("\nin malloc -> %ld\n",(long int)((void*)(block + 1)));
 	return (void*)(block + 1);
 }
 
 void my_free(void* ptr){
-	printf("\nin free -> %ld\n",(long int)ptr);
+	//printf("\nin free -> %ld\n",(long int)ptr);
 	if(!ptr)
 		return;
 	block_t* ptr_block = (block_t*)ptr - 1;
@@ -120,6 +120,7 @@ void *my_calloc(size_t num, size_t nsize)
 }
 
 void* safe_malloc(uint32_t size){
+    printf("safe malloc\n");
 	void* handle = my_malloc(size);
 	if(handle == NULL){
 		printf("allocation terminated\n");
@@ -129,6 +130,7 @@ void* safe_malloc(uint32_t size){
 }
 
 void* safe_calloc(uint32_t size){
+    printf("safe calloc\n");
 	void* handle = my_calloc(size, 1);
 	if(handle == NULL){
 		printf("allocation terminated\n");
@@ -138,6 +140,7 @@ void* safe_calloc(uint32_t size){
 }
 
 void safe_free(void* ptr){
+    printf("safe free\n");
 	my_free(ptr);
 	//printf("free ends");
 }

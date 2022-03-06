@@ -9,40 +9,24 @@
 #include "string.h"
 
 int main(){
-	void* my_data = my_malloc(20);
-	void* my_data2 = my_malloc(20);
-	void* my_data3 = my_malloc(20);
+	void* my_data = safe_malloc(20);
+	void* my_data2 = safe_malloc(20);
+	void* my_data3 = safe_malloc(20);
 	
 	printf("\nfrom malloc -> %ld\n",(long int)my_data);
 	//my_data = "sadasdsad\0";
 
-	my_free(my_data2);
-	my_free(my_data);
-
-	my_free(my_data3);
+	safe_free(my_data2);
+	safe_free(my_data);
+	safe_free(my_data3);
 	
 
-	stack_allocator* sa = create_stack_allocator(1000);
-	char* data = (char*)s_alloc(sa, 20);
-	data = "122222222222222\0";
-	//printf("%s", (char*)my_data);
+	//stack_allocator* sa = create_stack_allocator(1000);
+	//char* data = (char*)s_alloc(sa, 20);
+	//data = "122222222222222\0";
 
-
-	//simple_array_based_stack* stack = create_array_based_stack(1000, sizeof(char));
-	char* a = "s";
-	//push_array_based_stack(stack, a);
-	//push_array_based_stack(stack, a);
-	//push_array_based_stack(stack, a);
-	//push_array_based_stack(stack, a);
-	//push_array_based_stack(stack, a);
-	//push_array_based_stack(stack, a);
-
-	//printf("%s\n", (char*)stack->stack_buffer);
-	//char dest = 's';
-	//pop_array_based_stack(stack, &dest);
-	//printf("exit happens res => %s\n", dest);
 		
-	destroy_stack_allocator(sa);
+	//destroy_stack_allocator(sa);
 	printf("\nend here\n");	
 	return 0;
 }
